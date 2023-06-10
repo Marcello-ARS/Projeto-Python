@@ -1,0 +1,84 @@
+import requests
+import tkinter as tk
+from tkinter import messagebox
+from datetime import datetime
+
+# Criar uma instância Tkinter
+root = tk.Tk()
+root.title("Validador de URLs")
+
+# Criar uma lista para exibir as URLs cadastradas
+url_listbox = tk.Listbox(root)
+url_listbox.pack()
+
+# Função para adicionar uma nova URL
+def adicionar_url():
+    url = url_entry.get()
+    if url:
+        url_listbox.insert(tk.END, url)
+        urls[url] = ""
+        url_entry.delete(0, tk.END)
+
+# Botão para adicionar uma nova URL
+adicionar_button = tk.Button(root, text="Adicionar URL", command=adicionar_url)
+adicionar_button.pack()
+
+# Entrada de texto para adicionar uma nova URL
+url_entry = tk.Entry(root)
+url_entry.pack()
+
+# Função para validar uma URL
+def validar_url():
+    url = url_listbox.get(tk.ACTIVE)
+    if url:
+        try:
+            response = requests.get(url)
+            status_code = response.status_code
+            if status_code == 200:
+                messagebox.showinfo("Validação de URL", "A URL está ativa.")
+            else:
+                messagebox.showwarning("Validação de URL", f"A URL retornou um status code {status_code}.")
+        except requests.exceptions.RequestException:
+            messagebox.showerror("Validação de URL", "Não foi possível conectar à URL.")
+
+# Botão para validar uma URL
+validar_button = tk.Button(root, text="Validar URL", command=validar_url)
+validar_button.pack()
+
+# Função para validar todas as URLs cadastradas
+def validar_todas():
+    for i in range(url_listbox.size()):
+        url = url_listbox.get(i)
+        try:
+            response = requests.get(url)
+            status_code = response.status_code
+            if status_code == 200:
+                messagebox.showinfo("Validação de URLs", f"A URL {url} está ativa.")
+            else:
+                messagebox.showwarning("Validação de URLs", f"A URL {url} retornou um status code {status_code}.")
+        except requests.exceptions.RequestException:
+            messagebox.showerror("Validação de URLs", f"Não foi possível conectar à URL {url}.")
+
+# Botão para validar todas as URLs
+validar_todas_button = tk.Button(root, text="Validar Todas", command=validar_todas)
+validar_todas_button.pack()
+
+# Função para exibir o histórico de validações de uma URL
+def exibir_historico():
+    url = url_listbox.get(tk.ACTIVE)
+    if url in historico:
+        messagebox.showinfo("Histórico de Validações", f"Histórico de validações da URL: {url}\n\n{historico[url]}")
+    else:
+        messagebox.showwarning("Histórico de Validações", "URL não encontrada no histórico.")
+
+# Botão para exibir o histórico de validações
+historico_button = tk.Button(root, text="Exibir Histórico", command=exibir_historico)
+historico_button.pack()
+
+# Função para importar URLs de um arquivo de texto
+def importar_urls():
+    arquivo = tk.filedialog.askopenfilename(filetypes=(("Arquivos de Texto", "*.txt"), ("Todos os arquivos", "*.*")))
+    try:
+        with open(arquivo, 'r') as file:
+            for line in file:
+                url = line

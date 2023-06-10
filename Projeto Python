@@ -1,0 +1,93 @@
+import requests
+import time
+from datetime import datetime
+
+# Dicionário para armazenar as URLs cadastradas
+urls = {}
+
+# Dicionário para armazenar o histórico de validações
+historico = {}
+
+# Função para incluir uma nova URL
+def incluir_url():
+    url = input("Digite a URL a ser cadastrada: ")
+    urls[url] = ""
+
+# Função para listar as URLs cadastradas
+def listar_urls():
+    if len(urls) == 0:
+        print("Nenhuma URL cadastrada.")
+    else:
+        print("URLs cadastradas:")
+        for url in urls:
+            print(url)
+
+# Função para alterar uma URL cadastrada
+def alterar_url():
+    url = input("Digite a URL a ser alterada: ")
+    if url in urls:
+        nova_url = input("Digite a nova URL: ")
+        urls[nova_url] = urls.pop(url)
+        print("URL alterada com sucesso.")
+    else:
+        print("URL não encontrada.")
+
+# Função para excluir uma URL cadastrada
+def excluir_url():
+    url = input("Digite a URL a ser excluída: ")
+    if url in urls:
+        urls.pop(url)
+        print("URL excluída com sucesso.")
+    else:
+        print("URL não encontrada.")
+
+# Função para validar uma URL
+def validar_url(url):
+    try:
+        response = requests.get(url)
+        status_code = response.status_code
+        if status_code == 200:
+            print("A URL está ativa.")
+        else:
+            print(f"A URL retornou um status code {status_code}.")
+    except requests.exceptions.RequestException:
+        print("Não foi possível conectar à URL.")
+
+# Função para validar todas as URLs cadastradas
+def validar_todas_urls():
+    for url in urls:
+        print(f"Validando URL: {url}")
+        validar_url(url)
+        historico[url].append((datetime.now(), status_code, response.elapsed.total_seconds(), response.headers['server'], response.headers['content-type']))
+        print("")
+
+# Função para exibir o histórico de validações de uma URL
+def exibir_historico(url):
+    if url in historico:
+        print(f"Histórico de validações da URL: {url}")
+        for execucao in historico[url]:
+            print(f"Data/hora: {execucao[0]}")
+            print(f"Status code: {execucao[1]}")
+            print(f"Tempo de resposta: {execucao[2]} segundos")
+            print(f"Servidor: {execucao[3]}")
+            print(f"Tipo de conteúdo: {execucao[4]}")
+            print("")
+    else:
+        print("URL não encontrada no histórico.")
+
+# Função para importar URLs de um arquivo de texto
+def importar_urls():
+    arquivo = input("Digite o nome do arquivo de texto contendo as URLs: ")
+    try:
+        with open(arquivo, 'r') as file:
+            for line in file:
+                url = line.strip()
+                urls[url] = ""
+        print("URLs importadas com sucesso.")
+    except FileNotFoundError:
+        print("Arquivo não encontrado.")
+
+# Função para exibir informações sobre o domínio da URL
+def informacoes_dominio(url):
+    print(f"Informações do domínio: {url}")
+    # Implementar a lógica para obter as informações do domínio desejadas

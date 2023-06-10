@@ -1,0 +1,63 @@
+import requests
+import tkinter as tk
+from tkinter import messagebox, filedialog
+import sqlite3
+from datetime import datetime
+
+# Criar uma conexão com o banco de dados SQLite
+conn = sqlite3.connect('urls.db')
+cursor = conn.cursor()
+
+# Criar uma tabela para armazenar as URLs, se ainda não existir
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS urls (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        url TEXT
+    )
+''')
+conn.commit()
+
+# Função para adicionar uma nova URL
+def adicionar_url():
+    url = url_entry.get()
+    if url:
+        # Inserir a URL no banco de dados
+        cursor.execute('INSERT INTO urls (url) VALUES (?)', (url,))
+        conn.commit()
+        url_listbox.insert(tk.END, url)
+        url_entry.delete(0, tk.END)
+
+# Função para carregar as URLs do banco de dados
+def carregar_urls():
+    cursor.execute('SELECT url FROM urls')
+    urls = cursor.fetchall()
+    for url in urls:
+        url_listbox.insert(tk.END, url[0])
+
+# Restante do código...
+
+# Função para validar uma URL
+def validar_url():
+    url = url_listbox.get(tk.ACTIVE)
+    if url:
+        try:
+            response = requests.get(url)
+            status_code = response.status_code
+            if status_code == 200:
+                messagebox.showinfo("Validação de URL", "A URL está ativa.")
+            else:
+                messagebox.showwarning("Validação de URL", f"A URL retornou um status code {status_code}.")
+        except requests.exceptions.RequestException:
+            messagebox.showerror("Validação de URL", "Não foi possível conectar à URL.")
+
+# Restante do código...
+
+# Função para fechar a conexão com o banco de dados ao fechar a janela
+def fechar_janela():
+    conn.close()
+    root.destroy()
+
+# Configurar o evento de fechar a janela
+root.protocol("WM_DELETE_WINDOW", fechar_janela)
+
+# Restante do código...
